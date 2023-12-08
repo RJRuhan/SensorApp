@@ -4,6 +4,7 @@ const cors = require("cors");
 const {pgp,db} = require("./db");
 
 const dotenv = require('dotenv');
+const authenticateKey = require("./apiAuth");
 dotenv.config();
 
 const app = express();
@@ -12,7 +13,7 @@ app.use(cors());
 
 app.use(express.json());
 
-app.post('/addNewData', async (req, res) => {
+app.post('/addNewData',authenticateKey, async (req, res) => {
 
     try {
 
@@ -23,16 +24,11 @@ app.post('/addNewData', async (req, res) => {
         console.log('Inserted row', result);
         const subject_id = result.id;
 
-
         const walks = req.body.walks;
         // walks = walks.map(obj => ({ ...obj, subject_id : subject_id, phone_model : "dummy", walk_type : 0 }));
         for (let i = 0;i < walks.length;i++ ) {
             walks[i].subject_id = subject_id;
-            walks[i].walk_type = 0;
-            walks[i].device_position = walks[i].device_pos;
-            walks[i].phone_model = "dummy";
         }
-
 
         cs = new pgp.helpers.ColumnSet(['track', 'device_position', 'walk_type', 'time', 'phone_model', 'subject_id'], { table: 'walk' });
         query = pgp.helpers.insert(walks, cs) + ' RETURNING id';
@@ -41,17 +37,6 @@ app.post('/addNewData', async (req, res) => {
 
         for(let i = 0;i < walks.length;i++){
             const mAccl = walks[i].mAccl;
-            mAccl.avg_sample_rate = 0;
-            mAccl.avg_delay = 0;
-            mAccl.sensor_model = "dummy";
-            mAccl.accl_net_avg = 0;
-            mAccl.accl_net_dev = 0;
-            mAccl.accl_x_avg = 0;
-            mAccl.accl_y_avg = 0;
-            mAccl.accl_z_avg = 0;
-            mAccl.accl_x_dev = 0;
-            mAccl.accl_y_dev = 0;
-            mAccl.accl_z_dev = 0;
             mAccl.walk_id = walk_id[i].id;
 
             cs = new pgp.helpers.ColumnSet(['avg_sample_rate','avg_delay','sensor_model','accl_net_avg','accl_net_dev',
@@ -72,17 +57,6 @@ app.post('/addNewData', async (req, res) => {
             console.log('Inserted row', result);
 
             const mGyro = walks[i].mGyro;
-            mGyro.avg_sample_rate = 0;
-            mGyro.avg_delay = 0;
-            mGyro.sensor_model = "dummy";
-            mGyro.gyro_net_avg = 0;
-            mGyro.gyro_net_dev = 0;
-            mGyro.gyro_x_avg = 0;
-            mGyro.gyro_y_avg = 0;
-            mGyro.gyro_z_avg = 0;
-            mGyro.gyro_x_dev = 0;
-            mGyro.gyro_y_dev = 0;
-            mGyro.gyro_z_dev = 0;
             mGyro.walk_id = walk_id[i].id;
 
             cs = new pgp.helpers.ColumnSet(['avg_sample_rate','avg_delay','sensor_model','gyro_net_avg','gyro_net_dev',

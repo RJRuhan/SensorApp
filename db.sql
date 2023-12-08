@@ -82,3 +82,12 @@ DELETE FROM public.gyroscope_data;
 DELETE FROM public.gyroscope;
 DELETE FROM public.walk;
 DELETE FROM public.subject;
+
+ALTER SEQUENCE <tablename>_<id>_seq RESTART;
+
+ALTER SEQUENCE subject_id_seq RESTART;
+ALTER SEQUENCE walk_id_seq RESTART;
+ALTER SEQUENCE accelerometer_id_seq RESTART;
+ALTER SEQUENCE accelerometer_data_id_seq RESTART;
+ALTER SEQUENCE gyroscope_id_seq RESTART;
+ALTER SEQUENCE gyroscope_data_id_seq RESTART;
