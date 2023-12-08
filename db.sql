@@ -11,6 +11,7 @@ CREATE TABLE Walk (
     track INTEGER,
     device_position INTEGER,
     walk_type INTEGER,
+    time INTEGER,
     phone_model VARCHAR(255),
     subject_id INTEGER,
     FOREIGN KEY (subject_id) REFERENCES Subject(id)
@@ -74,3 +75,10 @@ CREATE TABLE Gyroscope_data (
 SELECT * FROM Subject;
 
 INSERT INTO subject VALUES ($1, $2, $3) RETURNING *;
+
+DELETE FROM public.accelerometer_data;
+DELETE FROM public.accelerometer;
+DELETE FROM public.gyroscope_data;
+DELETE FROM public.gyroscope;
+DELETE FROM public.walk;
+DELETE FROM public.subject;
