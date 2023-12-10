@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require("cors");
+const multer = require('multer');
+const upload = multer({ dest: 'dataset/' })
 
 const {pgp,db} = require("./db");
 
@@ -13,33 +15,12 @@ app.use(cors());
 
 app.use(express.json());
 
-app.post('/addNewData',authenticateKey, async (req, res) => {
 
-    console.log(req.headers);
-    console.log(req.body);
 
-    const totalLength = parseInt(req.headers['content-length'], 10);
-    let receivedLength = 0;
-    let data = '';
+app.post('/addNewData',authenticateKey,upload.single('file'), async (req, res) => {
 
-    req.on('data', (chunk) => {
-        receivedLength += chunk.length;
-        data += chunk;
-        console.log('new data', chunk);
-    });
-
-    req.on('end', () => {
-
-        // Check if all data has been received
-        if (data.length == totalLength) {
-            // Process the complete data
-            console.log('Received data:', data);
-            res.status(200).send('Data received successfully.');
-        }else{
-            res.status(400).send('Bad Request');
-        }
-        
-      });
+    console.log(req.file, req.body)
+    res.status(200).json("ok")
 
     // try {
 
