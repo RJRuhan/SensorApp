@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require("cors");
 const multer = require('multer');
 const upload = multer({ dest: 'dataset/' })
+const fs = require('node:fs');
 
 const {pgp,db} = require("./db");
 
@@ -17,9 +18,18 @@ app.use(express.json());
 
 
 
-app.post('/addNewData',authenticateKey,upload.single('file'), async (req, res) => {
+app.post('/addNewData',authenticateKey,upload.none('avatar'), async (req, res) => {
 
-    console.log(req.file, req.body)
+    console.log(req.file);
+    console.log(req.body);
+    // try {
+    //     const data = fs.readFileSync(req.file.path, 'utf8');
+    //     console.log(data);
+    // } catch (err) {
+    //     console.error(err);
+    // }
+
+
     res.status(200).json("ok")
 
     // try {
