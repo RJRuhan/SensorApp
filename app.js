@@ -15,74 +15,100 @@ app.use(express.json());
 
 app.post('/addNewData',authenticateKey, async (req, res) => {
 
-    try {
+    console.log(req.headers);
+    console.log(req.body);
 
-        let cs = new pgp.helpers.ColumnSet(['age', 'gender', 'height', 'weight'], { table: 'subject' });
-        let query = pgp.helpers.insert(req.body, cs) + ' RETURNING id';
+    const totalLength = parseInt(req.headers['content-length'], 10);
+    let receivedLength = 0;
+    let data = '';
 
-        let result = await db.one(query);
-        console.log('Inserted row', result);
-        const subject_id = result.id;
+    req.on('data', (chunk) => {
+        receivedLength += chunk.length;
+        data += chunk;
+        console.log('new data', chunk);
+    });
 
-        const walks = req.body.walks;
-        // walks = walks.map(obj => ({ ...obj, subject_id : subject_id, phone_model : "dummy", walk_type : 0 }));
-        for (let i = 0;i < walks.length;i++ ) {
-            walks[i].subject_id = subject_id;
+    req.on('end', () => {
+
+        // Check if all data has been received
+        if (data.length == totalLength) {
+            // Process the complete data
+            console.log('Received data:', data);
+            res.status(200).send('Data received successfully.');
+        }else{
+            res.status(400).send('Bad Request');
         }
-
-        cs = new pgp.helpers.ColumnSet(['track', 'device_position', 'walk_type', 'time', 'phone_model', 'subject_id'], { table: 'walk' });
-        query = pgp.helpers.insert(walks, cs) + ' RETURNING id';
-        const walk_id = result = await db.many(query);
-        console.log('Inserted row', walk_id);
-
-        for(let i = 0;i < walks.length;i++){
-            const mAccl = walks[i].mAccl;
-            mAccl.walk_id = walk_id[i].id;
-
-            cs = new pgp.helpers.ColumnSet(['avg_sample_rate','avg_delay','sensor_model','accl_net_avg','accl_net_dev',
-            'accl_x_avg','accl_y_avg','accl_z_avg','accl_x_dev','accl_y_dev','accl_z_dev','walk_id'], { table: 'accelerometer' });
-            query = pgp.helpers.insert(mAccl, cs) + ' RETURNING id';
-            result = await db.one(query);
-            const mAccl_id = result.id;
-            console.log('Inserted row', mAccl_id);
-
-            mAccl_data = mAccl.data
-            for(let i = 0;i < mAccl_data.length;i++){
-                mAccl_data[i].accelerometer_id = mAccl_id;
-            }
-            
-            cs = new pgp.helpers.ColumnSet(['timestamp','accl_x','accl_y','accl_z','accelerometer_id'], { table: 'accelerometer_data' });
-            query = pgp.helpers.insert(mAccl_data, cs) + ' RETURNING id';
-            result = await db.many(query);
-            console.log('Inserted row', result);
-
-            const mGyro = walks[i].mGyro;
-            mGyro.walk_id = walk_id[i].id;
-
-            cs = new pgp.helpers.ColumnSet(['avg_sample_rate','avg_delay','sensor_model','gyro_net_avg','gyro_net_dev',
-            'gyro_x_avg','gyro_y_avg','gyro_z_avg','gyro_x_dev','gyro_y_dev','gyro_z_dev','walk_id'], { table: 'gyroscope' });
-            query = pgp.helpers.insert(mGyro, cs) + ' RETURNING id';
-            result = await db.one(query);
-            const mGyro_id = result.id;
-            console.log('Inserted row', mGyro_id);
-
-            mGyro_data = mGyro.data
-            for(let i = 0;i < mGyro_data.length;i++){
-                mGyro_data[i].gyroscope_id = mGyro_id;
-            }
-            
-            cs = new pgp.helpers.ColumnSet(['timestamp','gyro_x','gyro_y','gyro_z','gyroscope_id'], { table: 'gyroscope_data' });
-            query = pgp.helpers.insert(mGyro_data, cs) + ' RETURNING id';
-            result = await db.many(query);
-            console.log('Inserted row', result);
-        }
-
-        res.status(201).json({ message: 'Data inserted successfully' });
         
-    } catch (error) {
-        console.error('Error inserting data:', error);
-        res.status(500).json({ message: 'Internal Server Error' });
-    }
+      });
+
+    // try {
+
+    //     let cs = new pgp.helpers.ColumnSet(['age', 'gender', 'height', 'weight'], { table: 'subject' });
+    //     let query = pgp.helpers.insert(req.body, cs) + ' RETURNING id';
+
+    //     let result = await db.one(query);
+    //     console.log('Inserted row', result);
+    //     const subject_id = result.id;
+
+    //     const walks = req.body.walks;
+    //     // walks = walks.map(obj => ({ ...obj, subject_id : subject_id, phone_model : "dummy", walk_type : 0 }));
+    //     for (let i = 0;i < walks.length;i++ ) {
+    //         walks[i].subject_id = subject_id;
+    //     }
+
+    //     cs = new pgp.helpers.ColumnSet(['track', 'device_position', 'walk_type', 'time', 'phone_model', 'subject_id'], { table: 'walk' });
+    //     query = pgp.helpers.insert(walks, cs) + ' RETURNING id';
+    //     const walk_id = result = await db.many(query);
+    //     console.log('Inserted row', walk_id);
+
+    //     for(let i = 0;i < walks.length;i++){
+    //         const mAccl = walks[i].mAccl;
+    //         mAccl.walk_id = walk_id[i].id;
+
+    //         cs = new pgp.helpers.ColumnSet(['avg_sample_rate','avg_delay','sensor_model','accl_net_avg','accl_net_dev',
+    //         'accl_x_avg','accl_y_avg','accl_z_avg','accl_x_dev','accl_y_dev','accl_z_dev','walk_id'], { table: 'accelerometer' });
+    //         query = pgp.helpers.insert(mAccl, cs) + ' RETURNING id';
+    //         result = await db.one(query);
+    //         const mAccl_id = result.id;
+    //         console.log('Inserted row', mAccl_id);
+
+    //         mAccl_data = mAccl.data
+    //         for(let i = 0;i < mAccl_data.length;i++){
+    //             mAccl_data[i].accelerometer_id = mAccl_id;
+    //         }
+            
+    //         cs = new pgp.helpers.ColumnSet(['timestamp','accl_x','accl_y','accl_z','accelerometer_id'], { table: 'accelerometer_data' });
+    //         query = pgp.helpers.insert(mAccl_data, cs) + ' RETURNING id';
+    //         result = await db.many(query);
+    //         console.log('Inserted row', result);
+
+    //         const mGyro = walks[i].mGyro;
+    //         mGyro.walk_id = walk_id[i].id;
+
+    //         cs = new pgp.helpers.ColumnSet(['avg_sample_rate','avg_delay','sensor_model','gyro_net_avg','gyro_net_dev',
+    //         'gyro_x_avg','gyro_y_avg','gyro_z_avg','gyro_x_dev','gyro_y_dev','gyro_z_dev','walk_id'], { table: 'gyroscope' });
+    //         query = pgp.helpers.insert(mGyro, cs) + ' RETURNING id';
+    //         result = await db.one(query);
+    //         const mGyro_id = result.id;
+    //         console.log('Inserted row', mGyro_id);
+
+    //         mGyro_data = mGyro.data
+    //         for(let i = 0;i < mGyro_data.length;i++){
+    //             mGyro_data[i].gyroscope_id = mGyro_id;
+    //         }
+            
+    //         cs = new pgp.helpers.ColumnSet(['timestamp','gyro_x','gyro_y','gyro_z','gyroscope_id'], { table: 'gyroscope_data' });
+    //         query = pgp.helpers.insert(mGyro_data, cs) + ' RETURNING id';
+    //         result = await db.many(query);
+    //         console.log('Inserted row', result);
+    //     }
+
+    //     res.status(201).json({ message: 'Data inserted successfully' });
+        
+    // } catch (error) {
+    //     console.error('Error inserting data:', error);
+    //     res.status(500).json({ message: 'Internal Server Error' });
+    // }
 })
 
 app.get('/test', (req, res) => {

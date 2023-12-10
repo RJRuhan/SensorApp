@@ -91,3 +91,5 @@ ALTER SEQUENCE accelerometer_id_seq RESTART;
 ALTER SEQUENCE accelerometer_data_id_seq RESTART;
 ALTER SEQUENCE gyroscope_id_seq RESTART;
 ALTER SEQUENCE gyroscope_data_id_seq RESTART;
+
+SELECT pg_size_pretty( pg_database_size('sensordb') );
