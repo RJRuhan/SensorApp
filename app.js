@@ -18,13 +18,16 @@ app.use(express.json());
 
 
 
-app.post('/addNewData',authenticateKey,upload.none('avatar'), async (req, res) => {
+app.post('/addNewData',authenticateKey,upload.single('avatar'), async (req, res) => {
 
-    // console.log(req.file);
-    // console.log(req.body);
-
-    data = JSON.parse(req.body.avatar)
-    console.log(data)
+    let data = ''
+    try {
+    data = fs.readFileSync(req.file.path, 'utf8');
+    } catch (err) {
+    console.error(err);
+    }
+    
+    data = JSON.parse(data)
 
     try {
 
