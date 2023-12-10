@@ -26,6 +26,15 @@ app.post('/addNewData',authenticateKey,upload.single('avatar'), async (req, res)
     } catch (err) {
     console.error(err);
     }
+
+    // delete a file asynchronously
+    fs.unlink(req.file.path, (err) => {
+    if (err) {
+        console.error(err);
+    } else {
+        console.log('File is deleted.');
+    }
+    });
     
     data = JSON.parse(data)
 
